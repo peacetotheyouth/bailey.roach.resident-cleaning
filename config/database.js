@@ -151,7 +151,14 @@ class DatabaseConfig {
    */
   validate(env = null) {
     const environment = env || process.env.NODE_ENV || 'development';
-    const config = this.getConfig(environment);
+    
+    let config;
+    try {
+      config = this.getConfig(environment);
+    } catch (error) {
+      // getConfig throws error for production with missing env vars
+      return false;
+    }
 
     const requiredFields = ['host', 'port', 'database', 'username', 'dialect'];
     const missingFields = requiredFields.filter(field => !config[field]);
