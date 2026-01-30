@@ -156,7 +156,7 @@ class DatabaseConfig {
     try {
       config = this.getConfig(environment);
     } catch (error) {
-      // getConfig throws error for production with missing env vars
+      // Any configuration loading error (e.g., missing env vars or invalid config) causes validation to fail
       return false;
     }
 
