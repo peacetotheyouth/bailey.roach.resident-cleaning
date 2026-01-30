@@ -174,6 +174,12 @@ class DatabaseConfig {
       console.error(`Invalid database port "${config.port}". Port must be an integer between 1 and 65535.`);
       return false;
     }
+    // Validate port is a finite integer within the valid TCP range
+    const portNumber = Number(config.port);
+    if (!Number.isFinite(portNumber) || !Number.isInteger(portNumber) || portNumber < 1 || portNumber > 65535) {
+      console.error(`Invalid database port "${config.port}". Port must be an integer between 1 and 65535.`);
+      return false;
+    }
 
     // Warn if password is missing in production
     if (environment === 'production' && !config.password) {
