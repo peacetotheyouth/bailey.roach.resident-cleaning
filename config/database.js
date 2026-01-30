@@ -151,13 +151,27 @@ class DatabaseConfig {
    */
   validate(env = null) {
     const environment = env || process.env.NODE_ENV || 'development';
-    const config = this.getConfig(environment);
+    let config;
+
+    try {
+      config = this.getConfig(environment);
+    } catch (error) {
+      console.error(`Failed to load database configuration for environment "${environment}": ${error.message}`);
+      return false;
+    }
 
     const requiredFields = ['host', 'port', 'database', 'username', 'dialect'];
     const missingFields = requiredFields.filter(field => !config[field]);
 
     if (missingFields.length > 0) {
       console.error(`Missing required fields: ${missingFields.join(', ')}`);
+      return false;
+    }
+
+    // Validate port is a finite integer within the valid TCP range
+    const portNumber = Number(config.port);
+    if (!Number.isFinite(portNumber) || !Number.isInteger(portNumber) || portNumber < 1 || portNumber > 65535) {
+      console.error(`Invalid database port "${config.port}". Port must be an integer between 1 and 65535.`);
       return false;
     }
 
