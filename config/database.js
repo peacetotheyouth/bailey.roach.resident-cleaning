@@ -23,48 +23,73 @@ class DatabaseConfig {
       const configFile = fs.readFileSync(this.configPath, 'utf8');
       return JSON.parse(configFile);
     } catch (error) {
-      console.error('Error loading database configuration:', error.message);
-      throw new Error('Failed to load database configuration');
+      if (error.code === 'ENOENT') {
+        throw new Error(`Database configuration file not found at ${this.configPath}`);
+      } else if (error instanceof SyntaxError) {
+        throw new Error(`Invalid JSON in database configuration: ${error.message}`);
+      }
+      throw new Error(`Failed to load database configuration: ${error.message}`);
     }
   }
 
   /**
    * Replace environment variable placeholders in a string
    * @param {string} value - String that may contain ${VAR} placeholders
+   * @param {string} env - Environment name for error context
    * @returns {string|number} Processed value with environment variables replaced
    */
-  replaceEnvVars(value) {
+  replaceEnvVars(value, env = 'unknown') {
     if (typeof value !== 'string') {
       return value;
     }
 
     const envVarRegex = /\$\{([^}]+)\}/g;
-    return value.replace(envVarRegex, (match, envVar) => {
+    let hasError = false;
+    
+    const result = value.replace(envVarRegex, (match, envVar) => {
       const envValue = process.env[envVar];
       if (envValue === undefined) {
-        console.warn(`Environment variable ${envVar} is not set`);
+        if (env === 'production') {
+          console.error(`Required environment variable ${envVar} is not set for production`);
+          hasError = true;
+        } else {
+          console.warn(`Environment variable ${envVar} is not set`);
+        }
         return match;
       }
       return envValue;
     });
+    
+    if (hasError) {
+      throw new Error(`Missing required environment variables for ${env} configuration`);
+    }
+    
+    return result;
   }
 
   /**
    * Process configuration object recursively to replace env vars
    * @param {Object} obj - Configuration object
+   * @param {string} env - Environment name for error context
    * @returns {Object} Processed configuration
    */
-  processConfig(obj) {
+  processConfig(obj, env = 'unknown') {
     const processed = {};
     
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         const value = obj[key];
         
         if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-          processed[key] = this.processConfig(value);
+          processed[key] = this.processConfig(value, env);
         } else if (typeof value === 'string') {
-          processed[key] = this.replaceEnvVars(value);
+          const replaced = this.replaceEnvVars(value, env);
+          // Convert port to number if it's the port field
+          if (key === 'port' && typeof replaced === 'string' && !isNaN(replaced)) {
+            processed[key] = parseInt(replaced, 10);
+          } else {
+            processed[key] = replaced;
+          }
         } else {
           processed[key] = value;
         }
@@ -86,7 +111,7 @@ class DatabaseConfig {
       throw new Error(`Configuration for environment '${environment}' not found`);
     }
 
-    return this.processConfig(this.config[environment]);
+    return this.processConfig(this.config[environment], environment);
   }
 
   /**
@@ -97,12 +122,26 @@ class DatabaseConfig {
     const processed = {};
     
     for (const env in this.config) {
-      if (this.config.hasOwnProperty(env)) {
-        processed[env] = this.processConfig(this.config[env]);
+      if (Object.prototype.hasOwnProperty.call(this.config, env)) {
+        processed[env] = this.processConfig(this.config[env], env);
       }
     }
     
     return processed;
+  }
+
+  /**
+   * Check for unresolved environment variables recursively
+   * @param {*} value - Value to check
+   * @returns {boolean} True if unresolved variables found
+   */
+  hasUnresolvedVars(value) {
+    if (typeof value === 'string') {
+      return value.includes('${');
+    } else if (typeof value === 'object' && value !== null) {
+      return Object.values(value).some(v => this.hasUnresolvedVars(v));
+    }
+    return false;
   }
 
   /**
@@ -122,16 +161,14 @@ class DatabaseConfig {
       return false;
     }
 
-    // Check for unresolved environment variables in production
-    if (environment === 'production') {
-      const hasUnresolvedVars = Object.values(config).some(value => {
-        if (typeof value === 'string') {
-          return value.includes('${');
-        }
-        return false;
-      });
+    // Warn if password is missing in production
+    if (environment === 'production' && !config.password) {
+      console.warn('Warning: Password is not set for production database connection');
+    }
 
-      if (hasUnresolvedVars) {
+    // Check for unresolved environment variables (recursively)
+    if (environment === 'production') {
+      if (this.hasUnresolvedVars(config)) {
         console.error('Production configuration contains unresolved environment variables');
         return false;
       }
@@ -141,11 +178,12 @@ class DatabaseConfig {
   }
 }
 
-// Export singleton instance
+// Export singleton instance and functions
 const dbConfig = new DatabaseConfig();
 
-module.exports = dbConfig.getConfig();
-module.exports.DatabaseConfig = DatabaseConfig;
-module.exports.getConfig = (env) => dbConfig.getConfig(env);
-module.exports.getAllConfigs = () => dbConfig.getAllConfigs();
-module.exports.validate = (env) => dbConfig.validate(env);
+module.exports = {
+  DatabaseConfig,
+  getConfig: (env) => dbConfig.getConfig(env),
+  getAllConfigs: () => dbConfig.getAllConfigs(),
+  validate: (env) => dbConfig.validate(env)
+};

@@ -74,10 +74,19 @@ See `.env.example` in the root directory for a complete list of environment vari
 ## Security Best Practices
 
 1. **Never commit sensitive credentials** - Use environment variables
-2. **Enable SSL in production** - Already configured in production settings
-3. **Use strong passwords** - Generate secure passwords for database users
-4. **Restrict database access** - Limit connections to specific IP addresses
-5. **Regular backups** - Implement automated backup solutions
+2. **Enable SSL in production** - Already configured in production settings with certificate validation
+3. **SSL Certificate Validation** - Production requires valid SSL certificates (rejectUnauthorized: true)
+4. **Use strong passwords** - Generate secure passwords for database users
+5. **Restrict database access** - Limit connections to specific IP addresses
+6. **Regular backups** - Implement automated backup solutions
+
+### SSL Certificate Configuration
+
+The production configuration requires valid SSL certificates. If you're using self-signed certificates in a development environment, you'll need to:
+
+1. Use a proper CA-signed certificate in production
+2. Ensure your database server has valid SSL certificates
+3. Never disable `rejectUnauthorized` in production environments
 
 ## Troubleshooting
 
