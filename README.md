@@ -1,6 +1,6 @@
 - 👋 Hi, I’m @peacetotheyouth
 - 👀 I’m interested in many things, mainly those that intellectually stimulate me like poker, chess, learning new things.
-- 🌱 I’m currently atudying to b a trauma and child developmental therapist, but ive always had a knack and liking for code. 
+- 🌱 I’m currently studying to be a trauma and child developmental therapist, but I've always had a knack and liking for code. 
 - 💞️ I’m looking to collaborate on web development.
 - 📫 How to reach me- 210-214-3408 and baileyroachh@gmail.com
 
