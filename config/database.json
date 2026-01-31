@@ -1,0 +1,54 @@
+{
+  "development": {
+    "host": "localhost",
+    "port": 5432,
+    "database": "resident_cleaning_dev",
+    "username": "postgres",
+    "password": "",
+    "dialect": "postgres",
+    "pool": {
+      "max": 5,
+      "min": 0,
+      "acquire": 30000,
+      "idle": 10000
+    },
+    "logging": true
+  },
+  "test": {
+    "host": "localhost",
+    "port": 5432,
+    "database": "resident_cleaning_test",
+    "username": "postgres",
+    "password": "",
+    "dialect": "postgres",
+    "pool": {
+      "max": 5,
+      "min": 0,
+      "acquire": 30000,
+      "idle": 10000
+    },
+    "logging": false
+  },
+  "production": {
+    "host": "${DB_HOST}",
+    "port": "${DB_PORT}",
+    "database": "${DB_NAME}",
+    "username": "${DB_USER}",
+    "password": "${DB_PASSWORD}",
+    "dialect": "postgres",
+    "pool": {
+      "max": 20,
+      "min": 5,
+      "acquire": 60000,
+      "idle": 10000
+    },
+    "logging": false,
+    "ssl": true,
+    "dialectOptions": {
+      "ssl": {
+        "require": true,
+        "rejectUnauthorized": true
+      }
+    }
+  }
+}
