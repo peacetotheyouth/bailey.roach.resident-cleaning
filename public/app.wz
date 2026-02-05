@@ -2,6 +2,9 @@
 async function loadTasks() {
     try {
         const response = await fetch('/api/tasks');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const tasks = await response.json();
         
         const container = document.getElementById('tasks-container');
@@ -16,13 +19,31 @@ async function loadTasks() {
             const taskCard = document.createElement('div');
             taskCard.className = `task-card ${task.status}`;
             
-            taskCard.innerHTML = `
-                <h3>${task.title}</h3>
-                <p><strong>Description:</strong> ${task.description}</p>
-                <p><strong>Assigned to:</strong> ${task.assignedTo}</p>
-                <p><strong>Due Date:</strong> ${formatDate(task.dueDate)}</p>
-                <span class="task-status ${task.status}">${formatStatus(task.status)}</span>
-            `;
+            // Create elements safely to prevent XSS
+            const title = document.createElement('h3');
+            title.textContent = task.title;
+            
+            const description = document.createElement('p');
+            description.innerHTML = '<strong>Description:</strong> ';
+            description.appendChild(document.createTextNode(task.description));
+            
+            const assignedTo = document.createElement('p');
+            assignedTo.innerHTML = '<strong>Assigned to:</strong> ';
+            assignedTo.appendChild(document.createTextNode(task.assignedTo));
+            
+            const dueDate = document.createElement('p');
+            dueDate.innerHTML = '<strong>Due Date:</strong> ';
+            dueDate.appendChild(document.createTextNode(formatDate(task.dueDate)));
+            
+            const status = document.createElement('span');
+            status.className = `task-status ${task.status}`;
+            status.textContent = formatStatus(task.status);
+            
+            taskCard.appendChild(title);
+            taskCard.appendChild(description);
+            taskCard.appendChild(assignedTo);
+            taskCard.appendChild(dueDate);
+            taskCard.appendChild(status);
             
             container.appendChild(taskCard);
         });
