@@ -50,7 +50,7 @@ api.get("/api/tasks", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
 // POST /api/tasks - Create a new cleaning task
 api.post("/api/tasks", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
   let taskData = Json.tryParse(req.body ?? "");
-  let taskId = "{counter.inc()}";
+  let taskId = "${counter.inc()}";
   
   let newTask = {
     id: taskId,
@@ -62,7 +62,7 @@ api.post("/api/tasks", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
   };
   
   // Store task in cloud bucket
-  database.put("task-{taskId}.json", Json.stringify(newTask));
+  database.put("task-${taskId}.json", Json.stringify(newTask));
   
   return {
     status: 201,
@@ -80,7 +80,7 @@ api.put("/api/tasks/:id", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
   let updateData = Json.tryParse(req.body ?? "");
   
   // Retrieve existing task
-  let taskKey = "task-{taskId}.json";
+  let taskKey = "task-${taskId}.json";
   
   try {
     let existingTaskData = database.get(taskKey);
@@ -150,7 +150,7 @@ api.get("/api/services", inflight (req: cloud.ApiRequest): cloud.ApiResponse => 
 // POST /api/bookings - Create a cleaning service booking
 api.post("/api/bookings", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
   let bookingData = Json.tryParse(req.body ?? "");
-  let bookingId = "{counter.inc()}";
+  let bookingId = "${counter.inc()}";
   
   let newBooking = {
     id: bookingId,
@@ -162,7 +162,7 @@ api.post("/api/bookings", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
   };
   
   // Store booking in cloud bucket
-  database.put("booking-{bookingId}.json", Json.stringify(newBooking));
+  database.put("booking-${bookingId}.json", Json.stringify(newBooking));
   
   return {
     status: 201,
