@@ -11,10 +11,10 @@ async function loadTasks() {
         container.replaceChildren();
         
         if (tasks.length === 0) {
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'loading';
-            loadingDiv.textContent = 'No tasks available';
-            container.appendChild(loadingDiv);
+            const emptyStateDiv = document.createElement('div');
+            emptyStateDiv.className = 'loading';
+            emptyStateDiv.textContent = 'No tasks available';
+            container.appendChild(emptyStateDiv);
             return;
         }
         
