@@ -24,15 +24,21 @@ async function loadTasks() {
             title.textContent = task.title;
             
             const description = document.createElement('p');
-            description.innerHTML = '<strong>Description:</strong> ';
+            const descLabel = document.createElement('strong');
+            descLabel.textContent = 'Description: ';
+            description.appendChild(descLabel);
             description.appendChild(document.createTextNode(task.description));
             
             const assignedTo = document.createElement('p');
-            assignedTo.innerHTML = '<strong>Assigned to:</strong> ';
+            const assignLabel = document.createElement('strong');
+            assignLabel.textContent = 'Assigned to: ';
+            assignedTo.appendChild(assignLabel);
             assignedTo.appendChild(document.createTextNode(task.assignedTo));
             
             const dueDate = document.createElement('p');
-            dueDate.innerHTML = '<strong>Due Date:</strong> ';
+            const dateLabel = document.createElement('strong');
+            dateLabel.textContent = 'Due Date: ';
+            dueDate.appendChild(dateLabel);
             dueDate.appendChild(document.createTextNode(formatDate(task.dueDate)));
             
             const status = document.createElement('span');
@@ -55,7 +61,13 @@ async function loadTasks() {
 }
 
 function formatDate(dateString) {
+    if (!dateString) {
+        return 'No date specified';
+    }
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+        return 'Invalid date';
+    }
     return date.toLocaleDateString('en-US', { 
         year: 'numeric', 
         month: 'long', 
