@@ -3,11 +3,12 @@
 
 bring cloud;
 bring http;
+bring util;
 
 // Cloud resources
 let api = new cloud.Api();
-let servicesTable = new cloud.Bucket(name: "services");
-let bookingsTable = new cloud.Bucket(name: "bookings");
+let servicesBucket = new cloud.Bucket(name: "services");
+let bookingsBucket = new cloud.Bucket(name: "bookings");
 let counter = new cloud.Counter();
 
 // Service data structure
@@ -64,7 +65,7 @@ let initServices = inflight () => {
     }
   ];
   
-  servicesTable.put("services.json", Json.stringify(services));
+  servicesBucket.put("services.json", Json.stringify(services));
 };
 
 // API Endpoints
@@ -72,7 +73,7 @@ let initServices = inflight () => {
 // GET /api/services - Get all available services
 api.get("/api/services", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
   try {
-    let servicesData = servicesTable.get("services.json");
+    let servicesData = servicesBucket.get("services.json");
     let services = Json.parse(servicesData);
     
     return cloud.ApiResponse {
@@ -139,11 +140,11 @@ api.post("/api/bookings", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
       bookingTime: body.get("bookingTime") ?? "09:00",
       notes: body.get("notes") ?? "",
       status: "pending",
-      createdAt: datetime.utcNow().toIso()
+      createdAt: util.env("TIMESTAMP") ?? "pending"
     };
     
     // Save booking
-    bookingsTable.put("booking-{bookingId}.json", Json.stringify(booking));
+    bookingsBucket.put("booking-{bookingId}.json", Json.stringify(booking));
     
     return cloud.ApiResponse {
       status: 201,
@@ -174,7 +175,7 @@ api.post("/api/bookings", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
 api.get("/api/bookings/:id", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
   try {
     let bookingId = req.vars.get("id");
-    let bookingData = bookingsTable.get("booking-{bookingId}.json");
+    let bookingData = bookingsBucket.get("booking-{bookingId}.json");
     let booking = Json.parse(bookingData);
     
     return cloud.ApiResponse {
@@ -205,13 +206,22 @@ api.get("/api/bookings/:id", inflight (req: cloud.ApiRequest): cloud.ApiResponse
 api.get("/confirmation/:id", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
   try {
     let bookingId = req.vars.get("id");
-    let bookingData = bookingsTable.get("booking-{bookingId}.json");
+    let bookingData = bookingsBucket.get("booking-{bookingId}.json");
     let booking = Json.parse(bookingData);
     
     // Get service details
-    let servicesData = servicesTable.get("services.json");
+    let servicesData = servicesBucket.get("services.json");
     let services = Json.parse(servicesData);
-    let service = services.get(booking.get("serviceId").asNum() - 1);
+    
+    // Find service by ID instead of using array index
+    let serviceId = booking.get("serviceId").asNum();
+    let service = nil;
+    for s in services {
+      if s.get("id").asNum() == serviceId {
+        service = s;
+        break;
+      }
+    }
     
     return cloud.ApiResponse {
       status: 200,
@@ -248,7 +258,7 @@ api.get("/api/health", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
     body: Json.stringify(Json {
       status: "ok",
       service: "Nest and Nurture Cleaning API",
-      timestamp: datetime.utcNow().toIso()
+      timestamp: util.env("TIMESTAMP") ?? "ok"
     })
   };
 });
