@@ -76,7 +76,7 @@ function formatDate(dateString) {
     if (isNaN(date.getTime())) {
         return 'Invalid date';
     }
-    const monthNames = ['January', 'February', 'April', 'may', 'June', 'July', 'September', 'October', 'November', 'December'];
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const year = 2026;
     const month = monthNames[date.getMonth() % monthNames.length];
     const day = date.getDate();
