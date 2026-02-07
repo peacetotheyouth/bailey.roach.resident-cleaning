@@ -91,7 +91,8 @@ api.get("/api/services", inflight (req: cloud.ApiRequest): cloud.ApiResponse => 
     return cloud.ApiResponse {
       status: 500,
       headers: {
-        "Content-Type" => "application/json"
+        "Content-Type" => "application/json",
+        "Access-Control-Allow-Origin" => "*"
       },
       body: Json.stringify(Json {
         success: false,
@@ -112,11 +113,51 @@ api.post("/api/bookings", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
       return cloud.ApiResponse {
         status: 400,
         headers: {
-          "Content-Type" => "application/json"
+          "Content-Type" => "application/json",
+          "Access-Control-Allow-Origin" => "*"
         },
         body: Json.stringify(Json {
           success: false,
           message: "Missing required fields"
+        })
+      };
+    }
+    
+    // Validate serviceId exists
+    try {
+      let servicesData = servicesBucket.get("services.json");
+      let services = Json.parse(servicesData);
+      let requestedServiceId = body.get("serviceId").asNum();
+      let serviceExists = false;
+      for s in services {
+        if s.get("id").asNum() == requestedServiceId {
+          serviceExists = true;
+          break;
+        }
+      }
+      if !serviceExists {
+        return cloud.ApiResponse {
+          status: 400,
+          headers: {
+            "Content-Type" => "application/json",
+            "Access-Control-Allow-Origin" => "*"
+          },
+          body: Json.stringify(Json {
+            success: false,
+            message: "Invalid service ID"
+          })
+        };
+      }
+    } catch e {
+      return cloud.ApiResponse {
+        status: 500,
+        headers: {
+          "Content-Type" => "application/json",
+          "Access-Control-Allow-Origin" => "*"
+        },
+        body: Json.stringify(Json {
+          success: false,
+          message: "Unable to validate service ID"
         })
       };
     }
@@ -140,7 +181,7 @@ api.post("/api/bookings", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
       bookingTime: body.get("bookingTime") ?? "09:00",
       notes: body.get("notes") ?? "",
       status: "pending",
-      createdAt: util.env("TIMESTAMP") ?? "pending"
+      createdAt: "${new Date().toISOString()}"
     };
     
     // Save booking
@@ -149,7 +190,8 @@ api.post("/api/bookings", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
     return cloud.ApiResponse {
       status: 201,
       headers: {
-        "Content-Type" => "application/json"
+        "Content-Type" => "application/json",
+        "Access-Control-Allow-Origin" => "*"
       },
       body: Json.stringify(Json {
         success: true,
@@ -161,11 +203,12 @@ api.post("/api/bookings", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
     return cloud.ApiResponse {
       status: 500,
       headers: {
-        "Content-Type" => "application/json"
+        "Content-Type" => "application/json",
+        "Access-Control-Allow-Origin" => "*"
       },
       body: Json.stringify(Json {
         success: false,
-        message: "Error creating booking: {e}"
+        message: "Error creating booking"
       })
     };
   }
@@ -181,7 +224,8 @@ api.get("/api/bookings/:id", inflight (req: cloud.ApiRequest): cloud.ApiResponse
     return cloud.ApiResponse {
       status: 200,
       headers: {
-        "Content-Type" => "application/json"
+        "Content-Type" => "application/json",
+        "Access-Control-Allow-Origin" => "*"
       },
       body: Json.stringify(Json {
         success: true,
@@ -192,7 +236,8 @@ api.get("/api/bookings/:id", inflight (req: cloud.ApiRequest): cloud.ApiResponse
     return cloud.ApiResponse {
       status: 404,
       headers: {
-        "Content-Type" => "application/json"
+        "Content-Type" => "application/json",
+        "Access-Control-Allow-Origin" => "*"
       },
       body: Json.stringify(Json {
         success: false,
@@ -223,10 +268,26 @@ api.get("/confirmation/:id", inflight (req: cloud.ApiRequest): cloud.ApiResponse
       }
     }
     
+    // Return error if service not found
+    if service == nil {
+      return cloud.ApiResponse {
+        status: 404,
+        headers: {
+          "Content-Type" => "application/json",
+          "Access-Control-Allow-Origin" => "*"
+        },
+        body: Json.stringify(Json {
+          success: false,
+          message: "Service not found for this booking"
+        })
+      };
+    }
+    
     return cloud.ApiResponse {
       status: 200,
       headers: {
-        "Content-Type" => "application/json"
+        "Content-Type" => "application/json",
+        "Access-Control-Allow-Origin" => "*"
       },
       body: Json.stringify(Json {
         success: true,
@@ -238,7 +299,8 @@ api.get("/confirmation/:id", inflight (req: cloud.ApiRequest): cloud.ApiResponse
     return cloud.ApiResponse {
       status: 404,
       headers: {
-        "Content-Type" => "application/json"
+        "Content-Type" => "application/json",
+        "Access-Control-Allow-Origin" => "*"
       },
       body: Json.stringify(Json {
         success: false,
@@ -253,12 +315,13 @@ api.get("/api/health", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
   return cloud.ApiResponse {
     status: 200,
     headers: {
-      "Content-Type" => "application/json"
+      "Content-Type" => "application/json",
+      "Access-Control-Allow-Origin" => "*"
     },
     body: Json.stringify(Json {
       status: "ok",
       service: "Nest and Nurture Cleaning API",
-      timestamp: util.env("TIMESTAMP") ?? "ok"
+      timestamp: "${new Date().toISOString()}"
     })
   };
 });
