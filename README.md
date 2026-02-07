@@ -1,12 +1,11 @@
 # 🧹 Nest And Nurture Cleaning Task Manager
 
 A beautiful web application for managing residential cleaning tasks and schedules.
-
-## About
-
-Hi, I'm @peacetotheyouth (Bailey Roach)! 👋
-- 👀 Im an exceptional maid, and a loving sister, daughter, friend.I have been commercially and residential cleaning for many years, so I decided to code this website and app from scratch,aiming for a faster, more efficient way of booking with me, weekly or an on call basis- my clients are #1. 
+## About- Hi, I'm @peacetotheyouth (Bailey Roach)
+- Im an exceptional maid, and a loving sister, daughter, friend.
+I have been commercially and residential cleaning for many years, so I decided to code this website and app from scratch,aiming for a faster, more efficient way of booking with me, weekly or an on call basis- my clients are #1. 
 I have a great eye for detail, design, presentation and treat every client and their homes as they are my own. I take the road less traveled and this will support me through college.
+
 - 🌱 I'm currently studying to be a trauma and child developmental therapist, but I've always had a knack and liking for code.
 - 💞️ I'm looking to collaborate on web development.
 - 📫 How to reach me: 210-214-3408 and baileyroachh@gmail.com
