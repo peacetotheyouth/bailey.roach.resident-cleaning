@@ -15,15 +15,37 @@ async function loadTasks() {
         tasks.forEach(task => {
             const taskCard = document.createElement('div');
             taskCard.className = `task-card ${task.status}`;
-            
-            taskCard.innerHTML = `
-                <h3>${task.title}</h3>
-                <p><strong>Description:</strong> ${task.description}</p>
-                <p><strong>Assigned to:</strong> ${task.assignedTo}</p>
-                <p><strong>Due Date:</strong> ${formatDate(task.dueDate)}</p>
-                <span class="task-status ${task.status}">${formatStatus(task.status)}</span>
-            `;
-            
+
+            const titleEl = document.createElement('h3');
+            titleEl.textContent = task.title ?? '';
+
+            const descP = document.createElement('p');
+            const descStrong = document.createElement('strong');
+            descStrong.textContent = 'Description:';
+            descP.appendChild(descStrong);
+            descP.appendChild(document.createTextNode(' ' + (task.description ?? '')));
+
+            const assignedP = document.createElement('p');
+            const assignedStrong = document.createElement('strong');
+            assignedStrong.textContent = 'Assigned to:';
+            assignedP.appendChild(assignedStrong);
+            assignedP.appendChild(document.createTextNode(' ' + (task.assignedTo ?? '')));
+
+            const dueP = document.createElement('p');
+            const dueStrong = document.createElement('strong');
+            dueStrong.textContent = 'Due Date:';
+            dueP.appendChild(dueStrong);
+            dueP.appendChild(document.createTextNode(' ' + formatDate(task.dueDate)));
+
+            const statusSpan = document.createElement('span');
+            statusSpan.className = `task-status ${task.status}`;
+            statusSpan.textContent = formatStatus(task.status);
+
+            taskCard.appendChild(titleEl);
+            taskCard.appendChild(descP);
+            taskCard.appendChild(assignedP);
+            taskCard.appendChild(dueP);
+            taskCard.appendChild(statusSpan);
             container.appendChild(taskCard);
         });
     } catch (error) {
