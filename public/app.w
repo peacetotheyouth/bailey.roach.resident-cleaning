@@ -124,26 +124,40 @@ api.post("/api/bookings", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
     }
     
     // Validate serviceId exists
-    let servicesData = servicesBucket.get("services.json");
-    let services = Json.parse(servicesData);
-    let requestedServiceId = body.get("serviceId").asNum();
-    let serviceExists = false;
-    for s in services {
-      if s.get("id").asNum() == requestedServiceId {
-        serviceExists = true;
-        break;
+    try {
+      let servicesData = servicesBucket.get("services.json");
+      let services = Json.parse(servicesData);
+      let requestedServiceId = body.get("serviceId").asNum();
+      let serviceExists = false;
+      for s in services {
+        if s.get("id").asNum() == requestedServiceId {
+          serviceExists = true;
+          break;
+        }
       }
-    }
-    if !serviceExists {
+      if !serviceExists {
+        return cloud.ApiResponse {
+          status: 400,
+          headers: {
+            "Content-Type" => "application/json",
+            "Access-Control-Allow-Origin" => "*"
+          },
+          body: Json.stringify(Json {
+            success: false,
+            message: "Invalid service ID"
+          })
+        };
+      }
+    } catch e {
       return cloud.ApiResponse {
-        status: 400,
+        status: 500,
         headers: {
           "Content-Type" => "application/json",
           "Access-Control-Allow-Origin" => "*"
         },
         body: Json.stringify(Json {
           success: false,
-          message: "Invalid service ID"
+          message: "Unable to validate service ID"
         })
       };
     }
@@ -167,7 +181,7 @@ api.post("/api/bookings", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
       bookingTime: body.get("bookingTime") ?? "09:00",
       notes: body.get("notes") ?? "",
       status: "pending",
-      createdAt: "{new Date().toISOString()}"
+      createdAt: "${new Date().toISOString()}"
     };
     
     // Save booking
@@ -307,7 +321,7 @@ api.get("/api/health", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
     body: Json.stringify(Json {
       status: "ok",
       service: "Nest and Nurture Cleaning API",
-      timestamp: "{new Date().toISOString()}"
+      timestamp: "${new Date().toISOString()}"
     })
   };
 });
