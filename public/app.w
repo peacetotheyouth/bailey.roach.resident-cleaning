@@ -150,30 +150,64 @@ api.get("/api/services", inflight (req: cloud.ApiRequest): cloud.ApiResponse => 
 
 // POST /api/bookings - Create a cleaning service booking
 api.post("/api/bookings", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
-  let bookingData = Json.tryParse(req.body ?? "");
-  let nextId = counter.inc();
-  let bookingId = "${nextId}";
-  
-  let newBooking = {
-    id: bookingId,
-    serviceId: bookingData?.get("serviceId"),
-    residentName: bookingData?.get("residentName"),
-    date: bookingData?.get("date"),
-    time: bookingData?.get("time"),
-    status: "confirmed"
-  };
-  
-  // Store booking in cloud bucket
-  database.put("booking-${nextId}.json", Json.stringify(newBooking));
-  
-  return {
-    status: 201,
-    headers: {
-      "content-type": "application/json",
-      "access-control-allow-origin": "*"
-    },
-    body: Json.stringify(newBooking)
-  };
+  // Parse and validate request body
+  let parsedBody = Json.tryParse(req.body ?? "");
+
+  if let bookingData = parsedBody {
+    let serviceId = bookingData.get("serviceId");
+    let residentName = bookingData.get("residentName");
+    let date = bookingData.get("date");
+    let time = bookingData.get("time");
+
+    if serviceId == nil || residentName == nil || date == nil || time == nil {
+      return {
+        status: 400,
+        headers: {
+          "content-type": "application/json",
+          "access-control-allow-origin": "*"
+        },
+        body: Json.stringify({
+          error: "Missing required fields",
+          requiredFields: ["serviceId", "residentName", "date", "time"]
+        })
+      };
+    }
+
+    let nextId = counter.inc();
+    let bookingId = "${nextId}";
+
+    let newBooking = {
+      id: bookingId,
+      serviceId: serviceId,
+      residentName: residentName,
+      date: date,
+      time: time,
+      status: "confirmed"
+    };
+
+    // Store booking in cloud bucket
+    database.put("booking-${nextId}.json", Json.stringify(newBooking));
+
+    return {
+      status: 201,
+      headers: {
+        "content-type": "application/json",
+        "access-control-allow-origin": "*"
+      },
+      body: Json.stringify(newBooking)
+    };
+  } else {
+    return {
+      status: 400,
+      headers: {
+        "content-type": "application/json",
+        "access-control-allow-origin": "*"
+      },
+      body: Json.stringify({
+        error: "Invalid JSON in request body"
+      })
+    };
+  }
 });
 
 // GET /api/bookings - Retrieve all bookings
