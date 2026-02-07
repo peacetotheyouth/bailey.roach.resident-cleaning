@@ -114,4 +114,4 @@ curl -X POST http://NestandNurture/api/bookings \
 
 ## Note
 
-This is a cloud application file (.n&n extension) for the Wing programming language, not the previous JavaScript-based implementation. The `.wz` extension mentioned in some references is a typo - Wing files use `.n&n` extension.
+This is a cloud application file for the Wing programming language (using the `.w` file extension), not the previous JavaScript-based implementation.
