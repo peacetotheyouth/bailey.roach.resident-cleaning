@@ -8,35 +8,18 @@ let counter = new cloud.Counter() as "task-id-counter";
 // GET /api/tasks - Retrieve all cleaning tasks
 api.get("/api/tasks", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
   let tasks = MutArray<Json>[];
-  
-  // Sample tasks
-  tasks.push({
-    id: "1",
-    title: "Kitchen Cleaning",
-    description: "Deep clean kitchen including counters, appliances, and floors",
-    assignedTo: "John Smith",
-    dueDate: "2026-02-10",
-    status: "pending"
-  });
-  
-  tasks.push({
-    id: "2",
-    title: "Bathroom Sanitization",
-    description: "Clean and sanitize all bathrooms on the first floor",
-    assignedTo: "Jane Doe",
-    dueDate: "2026-02-08",
-    status: "in-progress"
-  });
-  
-  tasks.push({
-    id: "3",
-    title: "Common Area Maintenance",
-    description: "Vacuum and dust all common areas",
-    assignedTo: "Bob Johnson",
-    dueDate: "2026-02-05",
-    status: "completed"
-  });
-  
+
+  // Load tasks from the bucket: list all objects and select those matching task-*.json
+  let objects = database.list();
+  for obj in objects {
+    if obj.key.startsWith("task-") && obj.key.endsWith(".json") {
+      let content = database.get(obj.key);
+      let parsed = Json.tryParse(content);
+      if parsed != nil {
+        tasks.push(parsed!);
+      }
+    }
+  }
   return {
     status: 200,
     headers: {
