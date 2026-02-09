@@ -90,8 +90,8 @@ bailey.roach.resident-cleaning/
 
 - **Backend**: Node.js, Express.js
 - **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **Database**: PostgreSQL (optional)
-- **ORM**: Sequelize
+- **Data storage (default)**: In-memory/sample data (no external database required)
+- **Database (optional)**: PostgreSQL (for future or persistent storage configuration)
 
 ## Screenshots
 
