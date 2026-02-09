@@ -2,6 +2,16 @@
 async function loadTasks() {
     try {
         const response = await fetch('/api/tasks');
+        if (!response.ok) {
+            console.error('Failed to load tasks. HTTP status:', response.status);
+            const container = document.getElementById('tasks-container');
+            let message = 'Error loading tasks. Please try again later.';
+            if (response.status === 429) {
+                message = 'Too many requests. Please wait a moment and try again.';
+            }
+            container.innerHTML = '<div class="loading">' + message + '</div>';
+            return;
+        }
         const tasks = await response.json();
         
         const container = document.getElementById('tasks-container');
