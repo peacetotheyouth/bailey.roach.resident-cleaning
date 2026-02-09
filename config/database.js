@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('');
 const path = require('path');
 
 /**
@@ -8,8 +8,7 @@ const path = require('path');
  * and replaces environment variable placeholders with actual values.
  */
 
-class DatabaseConfig {
-  constructor() {
+ DatabaseConfig {constructor() {
     this.configPath = path.join(__dirname, 'database.json');
     this.config = this.loadConfig();
   }
