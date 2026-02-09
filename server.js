@@ -17,8 +17,33 @@ const limiter = rateLimit({
 app.use(limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
 
+// Serve only intended static web assets from the public directory
+const staticRoot = path.join(__dirname, 'public');
+const allowedStaticExtensions = [
+  '.html',
+  '.css',
+  '.js',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.svg',
+  '.ico'
+];
+const staticMiddleware = express.static(staticRoot);
+
+app.use((req, res, next) => {
+  const ext = path.extname(req.path || '').toLowerCase();
+
+  // If the request has a disallowed extension, skip static file serving
+  if (ext && !allowedStaticExtensions.includes(ext)) {
+    return next();
+  }
+
+  // Delegate to Express static middleware for allowed assets
+  return staticMiddleware(req, res, next);
+});
 // Routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
