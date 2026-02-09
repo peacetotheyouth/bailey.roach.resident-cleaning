@@ -66,11 +66,22 @@ async function loadTasks() {
 }
 
 function formatDate(dateString) {
+    // Guard against missing or empty date strings
+    if (!dateString) {
+        return '';
+    }
+
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+
+    // Guard against unparseable dates that would render "Invalid Date"
+    if (Number.isNaN(date.getTime())) {
+        return '';
+    }
+
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
     });
 }
 
