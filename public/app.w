@@ -33,15 +33,45 @@ api.get("/api/tasks", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
 // POST /api/tasks - Create a new cleaning task
 api.post("/api/tasks", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
   let taskData = Json.tryParse(req.body ?? "");
+
+  // Validate JSON body
+  if taskData == nil {
+    return {
+      status: 400,
+      headers: {
+        "content-type": "application/json",
+        "access-control-allow-origin": "*"
+      },
+      body: Json.stringify({ error: "Invalid JSON in request body" })
+    };
+  }
+
+  // Validate required fields
+  let title = taskData?.tryGet("title");
+  let description = taskData?.tryGet("description");
+  let assignedTo = taskData?.tryGet("assignedTo");
+  let dueDate = taskData?.tryGet("dueDate");
+
+  if title == nil || description == nil || assignedTo == nil || dueDate == nil {
+    return {
+      status: 400,
+      headers: {
+        "content-type": "application/json",
+        "access-control-allow-origin": "*"
+      },
+      body: Json.stringify({ error: "Missing required fields: title, description, assignedTo, dueDate" })
+    };
+  }
+
   let nextId = counter.inc();
   let taskId = "${nextId}";
   
   let newTask = {
     id: taskId,
-    title: taskData?.get("title"),
-    description: taskData?.get("description"),
-    assignedTo: taskData?.get("assignedTo"),
-    dueDate: taskData?.get("dueDate"),
+    title: title,
+    description: description,
+    assignedTo: assignedTo,
+    dueDate: dueDate,
     status: "pending"
   };
   
