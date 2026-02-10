@@ -11,9 +11,9 @@ api.get("/api/tasks", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
 
   // Load tasks from the bucket: list all objects and select those matching task-*.json
   let objects = database.list();
-  for obj in objects {
-    if obj.key.startsWith("task-") && obj.key.endsWith(".json") {
-      let content = database.get(obj.key);
+  for key in objects {
+    if key.startsWith("task-") && key.endsWith(".json") {
+      let content = database.get(key);
       let parsed = Json.tryParse(content);
       if parsed != nil {
         tasks.push(parsed!);
