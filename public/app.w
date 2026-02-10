@@ -92,17 +92,52 @@ api.post("/api/tasks", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
 api.put("/api/tasks/:id", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
   let taskId = req.vars.get("id");
   let updateData = Json.tryParse(req.body ?? "");
+
+  // Validate request body JSON
+  if updateData == nil {
+    return {
+      status: 400,
+      headers: {
+        "content-type": "application/json",
+        "access-control-allow-origin": "*"
+      },
+      body: Json.stringify({ error: "Invalid request body JSON" })
+    };
+  }
   
   // Retrieve existing task
   let taskKey = "task-${taskId}.json";
   
   try {
     let existingTaskData = database.get(taskKey);
-    let task = Json.tryParse(existingTaskData);
+    let parsedTask = Json.tryParse(existingTaskData);
+
+    if parsedTask == nil {
+      return {
+        status: 500,
+        headers: {
+          "content-type": "application/json",
+          "access-control-allow-origin": "*"
+        },
+        body: Json.stringify({ error: "Stored task data is corrupted" })
+      };
+    }
+
+    let task = parsedTask!;
     
-    // Update status if provided
+    // Update status if provided, with validation
     if let updatedStatus = updateData?.tryGet("status") {
-      task?.set("status", updatedStatus);
+      if !(updatedStatus == "pending" || updatedStatus == "in-progress" || updatedStatus == "completed") {
+        return {
+          status: 400,
+          headers: {
+            "content-type": "application/json",
+            "access-control-allow-origin": "*"
+          },
+          body: Json.stringify({ error: "Invalid status value" })
+        };
+      }
+      task.set("status", updatedStatus);
     }
     
     // Save updated task
