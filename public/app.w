@@ -24,7 +24,9 @@ api.get("/api/tasks", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
     status: 200,
     headers: {
       "content-type": "application/json",
-      "access-control-allow-origin": "*"
+      "access-control-allow-origin": "*",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization"
     },
     body: Json.stringify(tasks)
   };
@@ -40,7 +42,9 @@ api.post("/api/tasks", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
       status: 400,
       headers: {
         "content-type": "application/json",
-        "access-control-allow-origin": "*"
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "access-control-allow-headers": "Content-Type, Authorization"
       },
       body: Json.stringify({ error: "Invalid JSON in request body" })
     };
@@ -57,7 +61,9 @@ api.post("/api/tasks", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
       status: 400,
       headers: {
         "content-type": "application/json",
-        "access-control-allow-origin": "*"
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "access-control-allow-headers": "Content-Type, Authorization"
       },
       body: Json.stringify({ error: "Missing required fields: title, description, assignedTo, dueDate" })
     };
@@ -82,7 +88,9 @@ api.post("/api/tasks", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
     status: 201,
     headers: {
       "content-type": "application/json",
-      "access-control-allow-origin": "*"
+      "access-control-allow-origin": "*",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization"
     },
     body: Json.stringify(newTask)
   };
@@ -99,7 +107,9 @@ api.put("/api/tasks/:id", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
       status: 400,
       headers: {
         "content-type": "application/json",
-        "access-control-allow-origin": "*"
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "access-control-allow-headers": "Content-Type, Authorization"
       },
       body: Json.stringify({ error: "Invalid request body JSON" })
     };
@@ -117,7 +127,9 @@ api.put("/api/tasks/:id", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
         status: 500,
         headers: {
           "content-type": "application/json",
-          "access-control-allow-origin": "*"
+          "access-control-allow-origin": "*",
+          "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "access-control-allow-headers": "Content-Type, Authorization"
         },
         body: Json.stringify({ error: "Stored task data is corrupted" })
       };
@@ -132,7 +144,9 @@ api.put("/api/tasks/:id", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
           status: 400,
           headers: {
             "content-type": "application/json",
-            "access-control-allow-origin": "*"
+            "access-control-allow-origin": "*",
+            "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "access-control-allow-headers": "Content-Type, Authorization"
           },
           body: Json.stringify({ error: "Invalid status value" })
         };
@@ -147,7 +161,9 @@ api.put("/api/tasks/:id", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
       status: 200,
       headers: {
         "content-type": "application/json",
-        "access-control-allow-origin": "*"
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "access-control-allow-headers": "Content-Type, Authorization"
       },
       body: Json.stringify(task)
     };
@@ -156,7 +172,9 @@ api.put("/api/tasks/:id", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
       status: 404,
       headers: {
         "content-type": "application/json",
-        "access-control-allow-origin": "*"
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "access-control-allow-headers": "Content-Type, Authorization"
       },
       body: Json.stringify({ error: "Task not found" })
     };
@@ -190,7 +208,9 @@ api.get("/api/services", inflight (req: cloud.ApiRequest): cloud.ApiResponse => 
     status: 200,
     headers: {
       "content-type": "application/json",
-      "access-control-allow-origin": "*"
+      "access-control-allow-origin": "*",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization"
     },
     body: Json.stringify(services)
   };
@@ -212,7 +232,9 @@ api.post("/api/bookings", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
         status: 400,
         headers: {
           "content-type": "application/json",
-          "access-control-allow-origin": "*"
+          "access-control-allow-origin": "*",
+          "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "access-control-allow-headers": "Content-Type, Authorization"
         },
         body: Json.stringify({
           error: "Missing required fields",
@@ -240,7 +262,9 @@ api.post("/api/bookings", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
       status: 201,
       headers: {
         "content-type": "application/json",
-        "access-control-allow-origin": "*"
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "access-control-allow-headers": "Content-Type, Authorization"
       },
       body: Json.stringify(newBooking)
     };
@@ -249,7 +273,9 @@ api.post("/api/bookings", inflight (req: cloud.ApiRequest): cloud.ApiResponse =>
       status: 400,
       headers: {
         "content-type": "application/json",
-        "access-control-allow-origin": "*"
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "access-control-allow-headers": "Content-Type, Authorization"
       },
       body: Json.stringify({
         error: "Invalid JSON in request body"
@@ -277,7 +303,9 @@ api.get("/api/bookings", inflight (req: cloud.ApiRequest): cloud.ApiResponse => 
     status: 200,
     headers: {
       "content-type": "application/json",
-      "access-control-allow-origin": "*"
+      "access-control-allow-origin": "*",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization"
     },
     body: Json.stringify(bookings)
   };
@@ -291,5 +319,19 @@ api.get("/health", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
       "content-type": "application/json"
     },
     body: Json.stringify({ status: "healthy", service: "Resident Cleaning API" })
+  };
+});
+
+// OPTIONS handler for CORS preflight requests
+api.options("/*", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
+  return {
+    status: 204,
+    headers: {
+      "access-control-allow-origin": "*",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization",
+      "access-control-max-age": "86400"
+    },
+    body: ""
   };
 });
