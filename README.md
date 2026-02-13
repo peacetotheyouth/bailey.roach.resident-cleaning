@@ -84,7 +84,8 @@ bailey.roach.resident-cleaning/
 │   └── README.md
 ├── .env.example       # Environment variables template
 └── README.md          # This file
-```
+```bash
+npm start
 
 ## Technologies Used
 
