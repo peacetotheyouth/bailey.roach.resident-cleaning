@@ -10,6 +10,8 @@ let api = new cloud.Api();
 let servicesBucket = new cloud.Bucket(name: "services");
 let bookingsBucket = new cloud.Bucket(name: "bookings");
 let counter = new cloud.Counter();
+let accountsBucket = new cloud.Bucket(name: "accounts");
+let accountCounter = new cloud.Counter();
 
 // Service data structure
 struct Service {
@@ -18,6 +20,18 @@ struct Service {
   description: str;
   price: num;
   duration: num;
+}
+
+// Account data structure
+struct Account {
+  id: num;
+  firstName: str;
+  lastName: str;
+  email: str;
+  passwordHash: str;
+  businessName: str;
+  phone: str;
+  createdAt: str;
 }
 
 // Booking data structure
@@ -324,6 +338,223 @@ api.get("/api/health", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
       timestamp: "${new Date().toISOString()}"
     })
   };
+});
+
+// POST /api/accounts - Create a new business account
+api.post("/api/accounts", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
+  try {
+    let body = Json.parse(req.body);
+
+    // Validate required fields
+    if !body.has("firstName") || !body.has("lastName") || !body.has("email") || !body.has("password") {
+      return cloud.ApiResponse {
+        status: 400,
+        headers: {
+          "Content-Type" => "application/json",
+          "Access-Control-Allow-Origin" => "*"
+        },
+        body: Json.stringify(Json {
+          success: false,
+          message: "Missing required fields: firstName, lastName, email, password"
+        })
+      };
+    }
+
+    let email = body.get("email").asStr();
+
+    // Check if email is already registered
+    try {
+      accountsBucket.get("email-{email}.json");
+      return cloud.ApiResponse {
+        status: 409,
+        headers: {
+          "Content-Type" => "application/json",
+          "Access-Control-Allow-Origin" => "*"
+        },
+        body: Json.stringify(Json {
+          success: false,
+          message: "An account with this email already exists"
+        })
+      };
+    } catch notFoundErr {
+      // Email not yet registered – continue with account creation
+    }
+
+    // Generate a unique random salt and hash the password (salt + password)
+    let passwordSalt = util.uuidv4();
+    let passwordHash = util.sha256("{passwordSalt}{body.get("password").asStr()}");
+
+    // Generate unique account ID
+    let accountId = accountCounter.inc();
+    let now = "${new Date().toISOString()}";
+
+    // Build the account record
+    let account = Json {
+      id: accountId,
+      firstName: body.get("firstName"),
+      lastName: body.get("lastName"),
+      email: email,
+      passwordHash: passwordHash,
+      passwordSalt: passwordSalt,
+      businessName: body.get("businessName") ?? "",
+      phone: body.get("phone") ?? "",
+      createdAt: now
+    };
+
+    // Persist account by ID and by email (for login lookup)
+    accountsBucket.put("account-{accountId}.json", Json.stringify(account));
+    accountsBucket.put("email-{email}.json", Json.stringify(Json { accountId: accountId }));
+
+    return cloud.ApiResponse {
+      status: 201,
+      headers: {
+        "Content-Type" => "application/json",
+        "Access-Control-Allow-Origin" => "*"
+      },
+      body: Json.stringify(Json {
+        success: true,
+        accountId: accountId,
+        message: "Account created successfully"
+      })
+    };
+  } catch e {
+    return cloud.ApiResponse {
+      status: 500,
+      headers: {
+        "Content-Type" => "application/json",
+        "Access-Control-Allow-Origin" => "*"
+      },
+      body: Json.stringify(Json {
+        success: false,
+        message: "Error creating account"
+      })
+    };
+  }
+});
+
+// GET /api/accounts/:id - Get account details (password excluded)
+api.get("/api/accounts/:id", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
+  try {
+    let accountId = req.vars.get("id");
+    let accountData = accountsBucket.get("account-{accountId}.json");
+    let account = Json.parse(accountData);
+
+    return cloud.ApiResponse {
+      status: 200,
+      headers: {
+        "Content-Type" => "application/json",
+        "Access-Control-Allow-Origin" => "*"
+      },
+      body: Json.stringify(Json {
+        success: true,
+        account: Json {
+          id: account.get("id"),
+          firstName: account.get("firstName"),
+          lastName: account.get("lastName"),
+          email: account.get("email"),
+          businessName: account.get("businessName"),
+          phone: account.get("phone"),
+          createdAt: account.get("createdAt")
+        }
+      })
+    };
+  } catch e {
+    return cloud.ApiResponse {
+      status: 404,
+      headers: {
+        "Content-Type" => "application/json",
+        "Access-Control-Allow-Origin" => "*"
+      },
+      body: Json.stringify(Json {
+        success: false,
+        message: "Account not found"
+      })
+    };
+  }
+});
+
+// POST /api/auth/login - Authenticate an existing account
+api.post("/api/auth/login", inflight (req: cloud.ApiRequest): cloud.ApiResponse => {
+  try {
+    let body = Json.parse(req.body);
+
+    if !body.has("email") || !body.has("password") {
+      return cloud.ApiResponse {
+        status: 400,
+        headers: {
+          "Content-Type" => "application/json",
+          "Access-Control-Allow-Origin" => "*"
+        },
+        body: Json.stringify(Json {
+          success: false,
+          message: "Email and password are required"
+        })
+      };
+    }
+
+    let email = body.get("email").asStr();
+
+    // Lookup account by email index
+    try {
+      let emailIndex = Json.parse(accountsBucket.get("email-{email}.json"));
+      let accountId = emailIndex.get("accountId").asNum();
+      let account = Json.parse(accountsBucket.get("account-{accountId}.json"));
+
+      // Compare hashed passwords using the stored salt
+      let passwordSalt = account.get("passwordSalt").asStr();
+      let passwordHash = util.sha256("{passwordSalt}{body.get("password").asStr()}");
+      if account.get("passwordHash").asStr() != passwordHash {
+        return cloud.ApiResponse {
+          status: 401,
+          headers: {
+            "Content-Type" => "application/json",
+            "Access-Control-Allow-Origin" => "*"
+          },
+          body: Json.stringify(Json {
+            success: false,
+            message: "Invalid email or password"
+          })
+        };
+      }
+
+      return cloud.ApiResponse {
+        status: 200,
+        headers: {
+          "Content-Type" => "application/json",
+          "Access-Control-Allow-Origin" => "*"
+        },
+        body: Json.stringify(Json {
+          success: true,
+          accountId: accountId,
+          message: "Login successful"
+        })
+      };
+    } catch notFoundErr {
+      return cloud.ApiResponse {
+        status: 401,
+        headers: {
+          "Content-Type" => "application/json",
+          "Access-Control-Allow-Origin" => "*"
+        },
+        body: Json.stringify(Json {
+          success: false,
+          message: "Invalid email or password"
+        })
+      };
+    }
+  } catch e {
+    return cloud.ApiResponse {
+      status: 500,
+      headers: {
+        "Content-Type" => "application/json",
+        "Access-Control-Allow-Origin" => "*"
+      },
+      body: Json.stringify(Json {
+        success: false,
+        message: "Error during login"
+      })
+    };
+  }
 });
 
 // Initialize services on startup
